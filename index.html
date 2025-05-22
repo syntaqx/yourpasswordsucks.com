@@ -96,6 +96,10 @@
   </a>
 
   <script>
+    function formatNumber(num) {
+      return num.toLocaleString('en-US');
+    }
+
     function estimateEntropy(password) {
       let charsetSize = 0;
       if (/[a-z]/.test(password)) charsetSize += 26;
@@ -105,12 +109,29 @@
       return charsetSize > 0 ? Math.log2(Math.pow(charsetSize, password.length)) : 0;
     }
 
+    function estimateCrackTime(entropy) {
+      const seconds = Math.pow(2, entropy) / 1e9;
+      if (seconds < 1) return 'cracked instantly 🙃';
+      if (seconds < 3600) return `${formatNumber(Math.floor(seconds))} seconds`;
+      if (seconds < 86400) return `${formatNumber(Math.floor(seconds / 60))} minutes`;
+      if (seconds < 31_536_000) return `${formatNumber(Math.floor(seconds / 3600))} hours`;
+      
+      const years = seconds / 31_536_000;
+      const rounded = Math.floor(years);
+
+      if (rounded < 10) return `${formatNumber(rounded)} years (meh)`;
+      if (rounded < 1000) return `${formatNumber(rounded)} years (respectable)`;
+      if (rounded < 100_000) return `${formatNumber(rounded)} years (well okay then)`;
+      if (rounded < 100_000_000) return `${formatNumber(rounded)} years (who are you, a spy?)`;
+      return `${formatNumber(rounded)} years (alright, you win)`;
+    }
+
     function hasCommonPatterns(password) {
       const patterns = [
-        /(.)\1{2,}/, // aaa, !!!, etc.
+        /(.)\1{2,}/,
         /(1234|password|qwerty|abcd)/i,
         /(spring|summer|fall|winter)\d{2,4}/i,
-        /(.{2,})\1{1,}/i // repeated chunks
+        /(.{2,})\1{1,}/i
       ];
       return patterns.some((p) => p.test(password));
     }
@@ -122,17 +143,6 @@
       if (entropy >= 30) return 'Pretty mediocre';
       if (entropy >= 15) return 'Weak sauce';
       return 'Absolute trash';
-    }
-
-    function estimateCrackTime(entropy) {
-      const seconds = Math.pow(2, entropy) / 1e9;
-      if (seconds < 1) return 'cracked instantly 🙃';
-      if (seconds < 60) return `${Math.floor(seconds)} seconds`;
-      if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes`;
-      if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours`;
-      if (seconds < 31536000) return `${Math.floor(seconds / 86400)} days`;
-      const years = seconds / 31536000;
-      return `${Math.floor(years)} years (but sure, trust your gut)`;
     }
 
     function checkStrength() {
