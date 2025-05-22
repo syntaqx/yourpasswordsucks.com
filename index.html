@@ -136,8 +136,7 @@
       const password = document.getElementById('entropyInput').value;
       const entropy = estimateEntropy(password);
       const score = checkAdvancedStrength(password);
-      const label = strengthLabel(score);
-
+    
       const bar = document.getElementById('strengthBar');
       bar.style.width = score + '%';
       bar.className =
@@ -146,8 +145,22 @@
           : score > 40
           ? 'bg-yellow-500 h-4 rounded-full'
           : 'bg-red-500 h-4 rounded-full';
-
-      document.getElementById('strengthLabel').textContent = `${label} (${score}%)`;
+    
+      // Use entropy to drive label directly
+      const label =
+        entropy >= 100
+          ? 'Actually secure!'
+          : entropy >= 75
+          ? 'Solid, but could be better'
+          : entropy >= 50
+          ? 'Decent-ish'
+          : entropy >= 30
+          ? 'Pretty mediocre'
+          : entropy >= 15
+          ? 'Weak sauce'
+          : 'Absolute trash';
+    
+      document.getElementById('strengthLabel').textContent = `${label} (${entropy.toFixed(1)} bits)`;
       document.getElementById('entropyScore').textContent = `Entropy: ${entropy.toFixed(2)} bits`;
     }
   </script>
