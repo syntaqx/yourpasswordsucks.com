@@ -45,8 +45,8 @@
           <div id="strengthBar" class="bg-red-500 h-4 rounded-full" style="width: 0%"></div>
         </div>
         <div id="strengthLabel" class="text-center">You're not even trying yet. (0%)</div>
-        <div id="entropyBits" class="text-center text-sm text-gray-500 mt-1"></div>
-        <div id="crackTime" class="text-center text-sm text-gray-500 mt-1"></div>
+        <div id="entropyBits" class="text-center text-sm text-gray-500 mt-1">Entropy: —</div>
+        <div id="crackTime" class="text-center text-sm text-gray-500 mt-1">Estimated crack time: —</div>
         <div id="patternWarning" class="text-center text-sm text-red-400 mt-1 hidden">Common pattern detected 🤨</div>
       </div>
 
@@ -111,11 +111,12 @@
 
     function estimateCrackTime(entropy) {
       const seconds = Math.pow(2, entropy) / 1e9;
+      if (!Number.isFinite(seconds) || seconds >= 1e17) return '∞ years (okay fine, you win)';
       if (seconds < 1) return 'cracked instantly 🙃';
       if (seconds < 3600) return `${formatNumber(Math.floor(seconds))} seconds`;
       if (seconds < 86400) return `${formatNumber(Math.floor(seconds / 60))} minutes`;
       if (seconds < 31_536_000) return `${formatNumber(Math.floor(seconds / 3600))} hours`;
-      
+
       const years = seconds / 31_536_000;
       const rounded = Math.floor(years);
 
@@ -124,6 +125,20 @@
       if (rounded < 100_000) return `${formatNumber(rounded)} years (well okay then)`;
       if (rounded < 100_000_000) return `${formatNumber(rounded)} years (who are you, a spy?)`;
       return `${formatNumber(rounded)} years (alright, you win)`;
+    }
+
+    function crackTimeToPercent(seconds) {
+      if (!Number.isFinite(seconds) || seconds >= 1e17) return 100;
+      if (seconds >= 1e15) return 95;
+      if (seconds >= 1e13) return 90;
+      if (seconds >= 1e11) return 80;
+      if (seconds >= 1e9)  return 70;
+      if (seconds >= 1e7)  return 60;
+      if (seconds >= 1e5)  return 50;
+      if (seconds >= 1e3)  return 40;
+      if (seconds >= 1e2)  return 25;
+      if (seconds >= 10)   return 10;
+      return 1;
     }
 
     function hasCommonPatterns(password) {
@@ -148,8 +163,9 @@
     function checkStrength() {
       const password = document.getElementById('entropyInput').value;
       const entropy = estimateEntropy(password);
+      const seconds = Math.pow(2, entropy) / 1e9;
+      const percent = crackTimeToPercent(seconds);
       const label = entropyLabel(entropy);
-      const percent = Math.min(entropy / 1.28, 100);
       const patternWarning = hasCommonPatterns(password);
 
       document.getElementById('strengthBar').style.width = percent + '%';
@@ -160,10 +176,9 @@
           ? 'bg-yellow-500 h-4 rounded-full'
           : 'bg-red-500 h-4 rounded-full';
 
-      document.getElementById('strengthLabel').textContent = `${label} (${percent.toFixed(0)}%)`;
+      document.getElementById('strengthLabel').textContent = `${label} (${percent}%)`;
       document.getElementById('entropyBits').textContent = `Entropy: ${entropy.toFixed(2)} bits`;
       document.getElementById('crackTime').textContent = `Estimated crack time: ${estimateCrackTime(entropy)}`;
-
       document.getElementById('patternWarning').classList.toggle('hidden', !patternWarning);
     }
   </script>
