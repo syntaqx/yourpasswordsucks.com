@@ -46,6 +46,7 @@
         </div>
         <div id="strengthLabel" class="text-center">You're not even trying yet. (0%)</div>
         <div id="entropyBits" class="text-center text-sm text-gray-500 mt-1"></div>
+        <div id="patternWarning" class="text-center text-sm text-red-400 mt-1 hidden">Common pattern detected 🤨</div>
       </div>
 
       <p class="mt-4 text-sm text-gray-400 italic text-center">
@@ -113,9 +114,7 @@
       return patterns.some((p) => p.test(password));
     }
 
-    function entropyLabel(entropy, password) {
-      if (password.length < 4) return 'Absolute trash';
-      if (hasCommonPatterns(password)) return 'Weak sauce (obvious pattern)';
+    function entropyLabel(entropy) {
       if (entropy >= 100) return 'Actually secure!';
       if (entropy >= 75) return 'Solid, but could be better';
       if (entropy >= 50) return 'Decent-ish';
@@ -127,8 +126,9 @@
     function checkStrength() {
       const password = document.getElementById('entropyInput').value;
       const entropy = estimateEntropy(password);
-      const label = entropyLabel(entropy, password);
+      const label = entropyLabel(entropy);
       const percent = Math.min(entropy / 1.28, 100); // scale to 0–100 range
+      const patternWarning = hasCommonPatterns(password);
 
       const bar = document.getElementById('strengthBar');
       bar.style.width = percent + '%';
@@ -141,6 +141,9 @@
 
       document.getElementById('strengthLabel').textContent = `${label} (${percent.toFixed(0)}%)`;
       document.getElementById('entropyBits').textContent = `Entropy: ${entropy.toFixed(2)} bits`;
+
+      const patternEl = document.getElementById('patternWarning');
+      patternEl.classList.toggle('hidden', !patternWarning);
     }
   </script>
 </body>
