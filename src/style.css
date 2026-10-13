@@ -369,7 +369,26 @@ h1 span {
     transparent 0 12px,
     color-mix(in srgb, var(--paper) 22%, transparent) 12px 15px
   );
-  transition: width 220ms ease, background-color 160ms ease;
+  transition: width 220ms ease, background-color 160ms ease, filter 120ms ease, opacity 120ms ease;
+}
+
+.stat-value {
+  transition: filter 120ms ease, opacity 120ms ease;
+}
+
+/* Delay the blur so fast updates never flash it; it only shows on slow ones. */
+.results[aria-busy="true"] .meter-fill,
+.results[aria-busy="true"] .stat-value {
+  filter: blur(1px);
+  opacity: 0.75;
+}
+
+.results[aria-busy="true"] .meter-fill {
+  transition-delay: 0s, 0s, 200ms, 200ms;
+}
+
+.results[aria-busy="true"] .stat-value {
+  transition-delay: 200ms;
 }
 
 .meter-fill[data-level="fair"] {
@@ -434,6 +453,28 @@ h1 span {
   font-family: var(--mono);
   font-size: 17px;
   font-weight: 400;
+}
+
+.crack-estimates {
+  display: grid;
+  gap: 4px;
+}
+
+.crack-estimate {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.crack-estimate > span {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.crack-estimate .stat-value {
+  font-size: 14px;
 }
 
 .math-note {

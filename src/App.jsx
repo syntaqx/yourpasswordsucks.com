@@ -5,8 +5,8 @@ import { siGithub } from "simple-icons";
 function getStrength(score) {
   if (score >= 4) return { level: "excellent", label: "Hard to guess" };
   if (score >= 3) return { level: "strong", label: "Looking good" };
-  if (score >= 2) return { level: "fair", label: "Could be stronger" };
-  return { level: "weak", label: "Easy to guess" };
+  if (score >= 2) return { level: "fair", label: "Getting stronger" };
+  return { level: "weak", label: "Room to strengthen" };
 }
 
 export default function App() {
@@ -32,7 +32,6 @@ export default function App() {
       return undefined;
     }
 
-    setAnalysis(null);
     setIsChecking(true);
     setAnalysisFailed(false);
 
@@ -41,7 +40,10 @@ export default function App() {
         if (!cancelled) setAnalysis(estimatePassword(password));
       })
       .catch(() => {
-        if (!cancelled) setAnalysisFailed(true);
+        if (!cancelled) {
+          setAnalysis(null);
+          setAnalysisFailed(true);
+        }
       })
       .finally(() => {
         if (!cancelled) setIsChecking(false);
@@ -52,22 +54,23 @@ export default function App() {
     };
   }, [hasPassword, password]);
 
-  let feedback = "Type one in. We promise to be normal about it.";
+  let feedback = "Enter a password for a private estimate and practical tips.";
   let feedbackTone = "";
   if (analysisFailed) {
     feedback = "The local checker couldn't load. Reload the page and try again.";
     feedbackTone = "warning";
-  } else if (isChecking) {
+  } else if (isChecking && !analysis) {
     feedback = "Checking words, patterns, and keyboard walks…";
   } else if (analysis?.feedback.warning) {
-    feedback = analysis.feedback.warning;
+    feedback = `Worth noting: ${analysis.feedback.warning}`;
     feedbackTone = "warning";
   } else if (analysis?.score >= 3) {
-    feedback = "Not bad. Give every account its own password.";
+    feedback = "Nice work. Keep it unique to this account.";
     feedbackTone = "good";
   } else if (analysis?.feedback.suggestions.length) {
-    feedback = analysis.feedback.suggestions.join(" ");
-    feedbackTone = "warning";
+    feedback = `A useful next step: ${analysis.feedback.suggestions.join(" ")}`;
+  } else if (analysis) {
+    feedback = "Try a few unrelated words, or use a password manager to make a unique one.";
   }
 
   function clearPassword() {
@@ -82,7 +85,7 @@ export default function App() {
         <header className="window-titlebar">
           <div className="window-name">
             <span className="app-mark" aria-hidden="true">Y!</span>
-            <span>Password Sucks</span>
+            <span>Private password check</span>
           </div>
           <div className="theme-switch" role="group" aria-label="Color theme">
             <button type="button" aria-pressed={theme === "auto"} onClick={() => setTheme("auto")} title="Use system theme">
@@ -101,8 +104,8 @@ export default function App() {
           <div className="app-heading">
             <div>
               <p className="app-kicker">A private password check</p>
-              <h1 id="app-title">Your password <span>sucks?</span></h1>
-              <p className="app-intro">Enter your password. We&apos;ll roast it. It never leaves this page.</p>
+              <h1 id="app-title">Make your password <span>stronger.</span></h1>
+              <p className="app-intro">Check a password privately. Get a useful next step—no judgment.</p>
             </div>
           </div>
 
@@ -138,11 +141,11 @@ export default function App() {
             </div>
           </div>
 
-          <section className="results" aria-label="Password strength results">
+          <section className="results" aria-label="Password strength results" aria-busy={isChecking}>
             <div className="result-heading">
               <span>Strength estimate</span>
               <span className="strength-label">
-                {isChecking ? "Checking..." : strength?.label ?? "Waiting for input..."}
+                {strength?.label ?? (isChecking ? "Checking..." : "Waiting for input...")}
               </span>
             </div>
             <div
@@ -164,9 +167,20 @@ export default function App() {
               </div>
               <div className="stat">
                 <span className="stat-label">Offline crack estimate</span>
-                <output className="stat-value">
-                  {analysis ? analysis.crackTimes.offlineFastHashingXPerSecond.display : "—"}
-                </output>
+                <div className="crack-estimates">
+                  <div className="crack-estimate">
+                    <span>Fast hash</span>
+                    <output className="stat-value">
+                      {analysis ? analysis.crackTimes.offlineFastHashingXPerSecond.display : "—"}
+                    </output>
+                  </div>
+                  <div className="crack-estimate">
+                    <span>Slow hash</span>
+                    <output className="stat-value">
+                      {analysis ? analysis.crackTimes.offlineSlowHashingXPerSecond.display : "—"}
+                    </output>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -181,8 +195,10 @@ export default function App() {
             <p className="classic-equation">
               <code>H = length × log₂(charset size)</code> is the classic formula for truly random strings.
               It assumes every character is picked uniformly at random. Real passwords don&apos;t work
-              that way, so we use the pattern estimate above. Crack time uses a fast-hash scenario;
-              actual attack costs depend on how a site stores passwords.
+              that way, so we use the pattern estimate above. Offline times show illustrative
+              fast-hash (10 billion guesses per second) and slow-hash (10,000 guesses per second) scenarios.
+              Real attack costs vary with hardware and password-hashing settings; these are not
+              predictions for a specific site.
             </p>
           </section>
 
