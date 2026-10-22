@@ -85,7 +85,7 @@ export default function App() {
         <header className="window-titlebar">
           <div className="window-name">
             <span className="app-mark" aria-hidden="true">Y!</span>
-            <span>Private password check</span>
+            <span>Your Password Sucks</span>
           </div>
           <div className="theme-switch" role="group" aria-label="Color theme">
             <button type="button" aria-pressed={theme === "auto"} onClick={() => setTheme("auto")} title="Use system theme">
@@ -104,7 +104,7 @@ export default function App() {
           <div className="app-heading">
             <div>
               <p className="app-kicker">A private password check</p>
-              <h1 id="app-title">Make your password <span>stronger.</span></h1>
+              <h1 id="app-title">Your password <span>sucks.</span></h1>
               <p className="app-intro">Check a password privately. Get a useful next step—no judgment.</p>
             </div>
           </div>
